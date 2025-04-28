@@ -1,3 +1,5 @@
+import ssl
+import certifi
 from pymongo.mongo_client import MongoClient
 from pymongo.server_api import ServerApi
 from pymongo.collection import Collection
@@ -15,7 +17,8 @@ def get_client() -> MongoClient:
         if not settings.MONGODB_URI:
             raise ValueError("MONGODB_URI is not set in environment variables")
         
-        _client = MongoClient(settings.MONGODB_URI, server_api=ServerApi('1'))
+        _client = MongoClient(settings.MONGODB_URI, server_api=ServerApi('1'),    tlsCAFile=certifi.where(),
+    ssl_match_hostname=True, ssl_cert_reqs=ssl.CERT_REQUIRED)
         
         # Test connection
         try:
