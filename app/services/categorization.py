@@ -32,6 +32,7 @@ class CategorizationService:
         if not title and not content:
             return {
                 "category": "Uncategorized",
+                "category_id": None,
                 "confidence": 0.0,
                 "keywords": [],
                 "method": "default"
@@ -44,9 +45,10 @@ class CategorizationService:
         # Use OpenAI for categorization
         if self.openai_enabled:
             try:
-                category, confidence = self._openai_categorization(title, content)
+                category, category_id, confidence = self._openai_categorization(title, content)
                 return {
                     "category": category,
+                    "category_id": category_id,
                     "confidence": confidence,
                     "keywords": keywords,
                     "method": "openai"
@@ -57,22 +59,25 @@ class CategorizationService:
         # If OpenAI fails or is not enabled, return uncategorized
         return {
             "category": "Uncategorized",
+            "category_id": None,
             "confidence": 0.0,
             "keywords": keywords,
             "method": "default"
         }
     
-    def _openai_categorization(self, title: str, content: str) -> Tuple[str, float]:
+    def _openai_categorization(self, title: str, content: str) -> Tuple[str, Optional[str], float]:
         """Use OpenAI to categorize notes"""
         # Get categories from the database
         categories_from_db = category_repository.get_categories()
         
         # Extract category names or use "Uncategorized" if none exist
         if categories_from_db:
-            category_names = [cat["name"] for cat in categories_from_db]
+            # Create a mapping of category names to their IDs
+            category_map = {cat["name"]: str(cat["id"]) for cat in categories_from_db if "id" in cat}
+            category_names = list(category_map.keys())
         else:
             # Default to Uncategorized if no categories in the database
-            return "Uncategorized", 0.0
+            return "Uncategorized", None, 0.0
         
         # Construct the prompt for categorization
         prompt = f"""Categorize the following note into one of these categories: {', '.join(category_names)}.
@@ -96,15 +101,18 @@ class CategorizationService:
         
         # Extract the predicted category
         predicted_category = response.choices[0].message.content.strip()
+        category_id = None
         
         # Clean up the category (sometimes the model might include quotes or extra text)
         for category in category_names:
             if category.lower() in predicted_category.lower():
                 predicted_category = category
+                # Get the category ID
+                category_id = category_map.get(category)
                 break
         
         # Use the model's choice as the category and assign a high confidence
-        return predicted_category, 0.9
+        return predicted_category, category_id, 0.9
     
     def extract_keywords(self, text: str, max_keywords: int = 5) -> List[str]:
         """Extract the most relevant keywords from text"""

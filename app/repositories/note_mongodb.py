@@ -30,7 +30,12 @@ class NoteMongoRepository(BaseMongoRepository):
     
     def update_note(self, note_id: str, note: NoteUpdate) -> Optional[Dict[str, Any]]:
         """Update a note"""
-        note_data = note.dict(exclude_unset=True)
+        if hasattr(note, 'dict'):
+            # It's a Pydantic model
+            note_data = note.dict(exclude_unset=True)
+        else:
+            # It's already a dictionary
+            note_data = note.copy() 
         # Convert category_ids to a list if provided
         if note_data.get("category_ids"):
             note_data["category_ids"] = list(note_data["category_ids"])
