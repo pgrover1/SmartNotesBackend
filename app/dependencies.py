@@ -68,3 +68,38 @@ def get_note_title_and_content(note=Depends(get_note_by_id)):
             detail="Note has no content to process"
         )
     return {"title": title, "content": content}
+
+def enhance_note_with_categories(note: dict, db=Depends(get_db())):
+    """Enhance note with category information
+    
+    If note has category IDs, fetch the corresponding categories.
+    If no categories, add an 'Uncategorized' category.
+    """
+    # Initialize categories list
+    note['categories'] = []
+    
+    # Get category IDs from note
+    category_ids = note.get('category_ids', [])
+    
+    # If there are category IDs, fetch the corresponding categories
+    if category_ids:
+        for cat_id in category_ids:
+            try:
+                category = category_service.get_category(db, category_id=cat_id)
+                if category:
+                    note['categories'].append({
+                        "id": category["id"],
+                        "name": category["name"]
+                    })
+            except Exception:
+                # Skip invalid categories
+                pass
+    
+    # If no categories were found, add 'Uncategorized'
+    if not note['categories']:
+        note['categories'] = [{
+            "id": "uncategorized",
+            "name": "Uncategorized"
+        }]
+    
+    return note

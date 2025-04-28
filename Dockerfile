@@ -28,7 +28,10 @@ RUN if [ "$ENABLE_AI_FEATURES" = "true" ]; then \
 # Copy project
 COPY . /app/
 
-# Initialize database
+# Copy the database initialization script
+ARG MONGODB_URI
+ENV MONGODB_URI=$MONGODB_URI
+RUN echo "MongoDB URI during build: $MONGODB_URI" # For debugging
 RUN python initialize_db.py
 
 # Create a non-root user to run the application

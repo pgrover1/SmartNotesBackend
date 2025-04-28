@@ -1,7 +1,7 @@
 import pytest
 from unittest.mock import MagicMock, patch
 
-from app.services.categorization_service import CategorizationService
+from app.services.categorization import CategorizationService
 
 class TestCategorizationService:
     """Tests for the CategorizationService"""

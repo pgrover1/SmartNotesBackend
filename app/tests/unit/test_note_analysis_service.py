@@ -1,6 +1,6 @@
 import pytest
 from unittest.mock import MagicMock, patch
-from app.services.note_analysis_service import NoteAnalysisService
+from app.services.note_analysis import NoteAnalysisService
 
 class TestNoteAnalysisService:
     """Tests for the NoteAnalysisService"""

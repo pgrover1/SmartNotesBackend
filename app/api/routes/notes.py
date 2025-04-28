@@ -24,7 +24,13 @@ async def get_notes(
     db = Depends(get_db())
 ):
     """Get all notes with pagination"""
-    return note_service.get_notes(db, skip=skip, limit=limit)
+    notes = note_service.get_notes(db, skip=skip, limit=limit)
+    
+    # Enhance each note with categories
+    from app.dependencies import enhance_note_with_categories
+    enhanced_notes = [enhance_note_with_categories(note, db) for note in notes]
+    
+    return enhanced_notes
 
 @router.post("/", response_model=NoteMongoResponse, status_code=status.HTTP_201_CREATED)
 async def create_note(
@@ -32,7 +38,13 @@ async def create_note(
     db = Depends(get_db())
 ):
     """Create a new note"""
-    return note_service.create_note(db, note_in=note_in)
+    note = note_service.create_note(db, note_in=note_in)
+    
+    # Enhance note with categories
+    from app.dependencies import enhance_note_with_categories
+    enhanced_note = enhance_note_with_categories(note, db)
+    
+    return enhanced_note
 
 @router.get("/{note_id}", response_model=NoteMongoResponse)
 async def get_note(
@@ -49,7 +61,12 @@ async def get_note(
     note = note_service.get_note(db, note_id=note_id)
     if not note:
         raise HTTPException(status_code=404, detail="Note not found")
-    return note
+    
+    # Enhance note with categories
+    from app.dependencies import enhance_note_with_categories
+    enhanced_note = enhance_note_with_categories(note, db)
+    
+    return enhanced_note
 
 @router.put("/{note_id}", response_model=NoteMongoResponse)
 async def update_note(
@@ -67,7 +84,12 @@ async def update_note(
     note = note_service.update_note(db, note_id=note_id, note_in=note_in)
     if not note:
         raise HTTPException(status_code=404, detail="Note not found")
-    return note
+    
+    # Enhance note with categories
+    from app.dependencies import enhance_note_with_categories
+    enhanced_note = enhance_note_with_categories(note, db)
+    
+    return enhanced_note
 
 @router.delete("/{note_id}", response_model=NoteMongoResponse)
 async def delete_note(
@@ -84,7 +106,12 @@ async def delete_note(
     note = note_service.delete_note(db, note_id=note_id)
     if not note:
         raise HTTPException(status_code=404, detail="Note not found")
-    return note
+    
+    # Enhance note with categories
+    from app.dependencies import enhance_note_with_categories
+    enhanced_note = enhance_note_with_categories(note, db)
+    
+    return enhanced_note
 
 @router.post("/search", response_model=List[NoteMongoResponse])
 async def search_notes(
@@ -94,7 +121,13 @@ async def search_notes(
     db = Depends(get_db())
 ):
     """Search notes by various criteria"""
-    return note_service.search_notes(db, query=query, skip=skip, limit=limit)
+    notes = note_service.search_notes(db, query=query, skip=skip, limit=limit)
+    
+    # Enhance each note with categories
+    from app.dependencies import enhance_note_with_categories
+    enhanced_notes = [enhance_note_with_categories(note, db) for note in notes]
+    
+    return enhanced_notes
 
 @router.post("/{note_id}/suggest-category", response_model=Dict[str, Any])
 async def suggest_category_for_note(

@@ -7,47 +7,36 @@ A FastAPI backend for a notes application with AI-powered features and MongoDB i
 - RESTful API for notes management (CRUD operations)
 - Category management for notes
 - Database flexibility:
-  - MongoDB support
+  - MongoDB as primary database
   - SQLAlchemy/SQL database fallback
-- AI-powered features:
-  - Automatic note summarization for longer notes
-  - Sentiment analysis of note content
-  - Category suggestion based on note content
+- AI-powered features (on-demand):
+  - Note summarization for content with more than 200 words
+  - Sentiment analysis of note content (positive/neutral/negative)
+  - Category suggestions based on note content
   - Natural language queries for searching notes
-  - Automatic categorization of notes
 
 ## AI Features
 
-### Automatic Summarization
-The backend generates concise summaries for longer notes using the BART-large-CNN model from Facebook. When a note is created or updated, if its content is longer than 200 characters, the system will automatically generate a summary.
+### On-Demand Summarization
+The backend provides an endpoint to generate concise summaries for notes using OpenAI's GPT-4o model. Summaries are only generated for notes with more than 200 words, as shorter notes don't benefit from summarization. Access this feature via the `/notes/{note_id}/summarize` endpoint.
 
 ### Sentiment Analysis
-Each note's content is analyzed to determine its emotional tone (Positive, Negative, or Neutral) using DistilBERT fine-tuned on the SST-2 dataset. The sentiment is stored with the note and returned in API responses.
+Notes can be analyzed to determine their emotional tone (Positive, Neutral, or Negative) using OpenAI's GPT-4o model. This is available through the dedicated `/notes/{note_id}/sentiment` endpoint.
 
-### Automatic Categorization
-The system can automatically suggest and assign categories to notes based on their content using:
-1. Zero-shot classification with BART-large-MNLI model
-2. Semantic similarity with sentence embeddings (fallback method)
+### Category Suggestion
+The system can suggest appropriate categories for notes based on their content using:
+1. Zero-shot classification with OpenAI's GPT-4o model
+2. Semantic similarity (as a fallback method)
 
-Autocategorization happens in two ways:
-- When creating a note without specifying categories
-- Through a dedicated endpoint that can categorize all uncategorized notes
-
-### Natural Language Queries
-Users can search for notes using natural language queries like "Find my meeting notes from last Monday" or "Show me all notes about programming in the Work category". The system extracts search parameters from these natural language inputs.
+Category suggestions are available on-demand through the `/notes/{note_id}/suggest-category` endpoint.
 
 ## Technology Stack
 
 - **Framework**: FastAPI
-- **Database Options**: 
-  - MongoDB with PyMongo
-  - SQLAlchemy with SQLite/PostgreSQL
-- **AI Models**: Hugging Face Transformers
-  - Summarization: facebook/bart-large-cnn
-  - Sentiment Analysis: distilbert-base-uncased-finetuned-sst-2-english
-  - Embeddings: sentence-transformers/all-MiniLM-L6-v2
-  - Zero-shot Classification: facebook/bart-large-mnli
+- **Database**: MongoDB with PyMongo
+- **AI Integration**: OpenAI API with GPT-4o
 - **Testing**: Pytest
+- **Documentation**: Swagger UI/ReDoc (automatic)
 
 ## Project Structure
 
@@ -78,7 +67,7 @@ app/
 1. Clone the repository:
 
 ```bash
-git clone https://github.com/yourusername/notes-api.git
+git clone https://github.com/pgrover1/SmartNotesBackend
 cd notes-api
 ```
 
@@ -120,19 +109,15 @@ USE_MONGODB=false
 python initialize_db.py
 ```
 
-### Setting up AI Features (Optional)
-
-To enable the AI-powered features, run the setup script:
-
-```bash
-python setup_ai.py
-```
-
 This script will:
-1. Install the necessary AI dependencies (transformers, torch, etc.)
-2. Download the required AI models from Hugging Face
+1. Set up and initialize the MongoDB collections
+2. Add default categories if none exist
 
-**Note:** The AI models require approximately 2-3GB of disk space. For faster startup, models are cached locally after the first download.
+**Note:** For AI features to work, you need to provide an OpenAI API key in your `.env` file:
+
+```
+OPENAI_API_KEY=your_api_key_here
+```
 
 If you prefer to run without AI features, you can disable them in your `.env` file:
 
@@ -140,10 +125,10 @@ If you prefer to run without AI features, you can disable them in your `.env` fi
 ENABLE_AI_FEATURES=false
 ```
 
-When AI features are disabled, the app will use simple fallback implementations:
-- Summarization: Returns the first 100 characters of the text
+When AI features are disabled, AI-powered endpoints will return appropriate fallbacks:
+- Summarization: Returns a message that summarization isn't available
 - Sentiment Analysis: Always returns "Neutral"
-- Category Suggestion: No automatic suggestions
+- Category Suggestion: Returns "Uncategorized" as the default category
 
 ### Running the Application
 

@@ -4,6 +4,7 @@ import logging
 from collections import Counter
 from openai import OpenAI
 from app.core.config import settings
+from app.repositories.category_mongodb import category_repository
 
 logger = logging.getLogger(__name__)
 
@@ -12,22 +13,6 @@ class CategorizationService:
     
     def __init__(self):
         """Initialize categorization service"""
-        # Default categories
-        self.default_categories = [
-            "Project Management", 
-            "Ideas/Brainstorming", 
-            "Meeting Notes", 
-            "Personal Tasks", 
-            "Research", 
-            "Customer Feedback",
-            "Work",
-            "Personal",
-            "Study",
-            "To-Do",
-            "Health",
-            "Finance"
-        ]
-        
         # Get API key from settings
         self.api_key = settings.OPENAI_API_KEY
         
@@ -79,8 +64,18 @@ class CategorizationService:
     
     def _openai_categorization(self, title: str, content: str) -> Tuple[str, float]:
         """Use OpenAI to categorize notes"""
+        # Get categories from the database
+        categories_from_db = category_repository.get_categories()
+        
+        # Extract category names or use "Uncategorized" if none exist
+        if categories_from_db:
+            category_names = [cat["name"] for cat in categories_from_db]
+        else:
+            # Default to Uncategorized if no categories in the database
+            return "Uncategorized", 0.0
+        
         # Construct the prompt for categorization
-        prompt = f"""Categorize the following note into one of these categories: {', '.join(self.default_categories)}.
+        prompt = f"""Categorize the following note into one of these categories: {', '.join(category_names)}.
         
         Note Title: "{title}"
         Note Content: "{content}"
@@ -91,7 +86,7 @@ class CategorizationService:
         response = self.client.chat.completions.create(
             model="gpt-4o",
             messages=[
-                {"role": "system", "content": f"You are a categorization assistant. Categorize the following note into exactly one of these categories: {', '.join(self.default_categories)}."},
+                {"role": "system", "content": f"You are a categorization assistant. Categorize the following note into exactly one of these categories: {', '.join(category_names)}."},
                 {"role": "user", "content": prompt}
             ],
             max_tokens=50,
@@ -103,7 +98,7 @@ class CategorizationService:
         predicted_category = response.choices[0].message.content.strip()
         
         # Clean up the category (sometimes the model might include quotes or extra text)
-        for category in self.default_categories:
+        for category in category_names:
             if category.lower() in predicted_category.lower():
                 predicted_category = category
                 break

@@ -18,7 +18,7 @@ class NoteAnalysisService:
         self.openai_enabled = bool(self.api_key) and settings.ENABLE_AI_FEATURES
         
         # Sentiment categories
-        self.sentiment_categories = ["Positive", "Neutral", "Negative"]
+        self.sentiment_categories = ["Positive", "Neutral", "Negative","Mixed"]
         
         if self.openai_enabled:
             # Initialize OpenAI client (updated for OpenAI v1.x API)
@@ -44,14 +44,6 @@ class NoteAnalysisService:
         # Use OpenAI for analysis
         if self.openai_enabled:
             try:
-                # Count words in the content
-                word_count = len(content.split())
-                
-                # Generate summary only for content with more than 200 words
-                if word_count >= 200:
-                    summary_result = self.generate_openai_summary(title, content)
-                    result["summary"] = summary_result.get("summary")
-                
                 # Get sentiment analysis
                 result["sentiment"] = self.analyze_sentiment(content)
                 result["analysis_method"] = "openai"
@@ -67,7 +59,7 @@ class NoteAnalysisService:
             return "Neutral"
             
         # Create prompt for sentiment analysis
-        prompt = f"""Analyze the sentiment of the following text and classify it as exactly one of: Positive, Neutral, or Negative.
+        prompt = f"""Analyze the sentiment of the following text and classify it as exactly one of: Positive, Neutral, Mixed or Negative.
         
         Text: "{content}"
         
