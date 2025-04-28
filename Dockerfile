@@ -23,9 +23,9 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY . /app/
 
 # Copy the database initialization script
-# ARG MONGODB_URI
-# ENV MONGODB_URI=$MONGODB_URI
-# RUN echo "MongoDB URI during build: $MONGODB_URI" # For debugging
+ARG MONGODB_URI
+ENV MONGODB_URI=$MONGODB_URI
+RUN echo "MongoDB URI during build: $MONGODB_URI" # For debugging
 RUN python initialize_db.py
 
 # Create a non-root user to run the application
