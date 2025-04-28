@@ -26,12 +26,30 @@ def init_mongodb():
         if "name" in kwargs:
             index_name = kwargs["name"]
         
-        # Check if index already exists
-        if index_name in existing_indexes or f"{index_name}" in existing_indexes:
-            print(f"Index {index_name} already exists, skipping...")
-        else:
+        # Better check for existing indexes by looking at their key patterns
+        index_exists = False
+        for idx_name, idx_info in existing_indexes.items():
+            # Check if the key pattern matches
+            key_pattern = idx_info.get('key', [])
+            if key_pattern:
+                if isinstance(index_key, list):
+                    # For compound indexes
+                    is_match = all(any(k[0] == field for k in key_pattern) for field in index_key)
+                else:
+                    # For single field indexes
+                    is_match = any(k[0] == index_key for k in key_pattern)
+                
+                if is_match:
+                    index_exists = True
+                    print(f"Index on {index_key} already exists as {idx_name}, skipping...")
+                    break
+        
+        if not index_exists:
             print(f"Creating index {index_name}...")
-            collection.create_index(index_key, **kwargs)
+            try:
+                collection.create_index(index_key, **kwargs)
+            except Exception as e:
+                print(f"Error creating index {index_name}: {e}")
     
     # Notes collection indexes
     ensure_index(db.notes, "created_at")
@@ -44,17 +62,29 @@ def init_mongodb():
     
     print("MongoDB collections and indexes created successfully")
     
-    # Add default categories if none exist
-    if db.categories.count_documents({}) == 0:
-        # Use simple datetime objects instead of complex structures
-        now = datetime.utcnow()
-        default_categories = [
-            {"name": "Work", "description": "Work-related notes", "created_at": now, "updated_at": now},
-            {"name": "Personal", "description": "Personal notes", "created_at": now, "updated_at": now}
-           ]
-        
-        db.categories.insert_many(default_categories)
-        print(f"Added {len(default_categories)} default categories")
+    # Add default categories if they don't exist
+    # Use simple datetime objects instead of complex structures
+    now = datetime.utcnow()
+    default_categories = [
+        {"name": "Work", "description": "Work-related notes", "created_at": now, "updated_at": now},
+        {"name": "Personal", "description": "Personal notes", "created_at": now, "updated_at": now},
+    ]
+    
+    # Insert categories one by one, checking if they exist first
+    categories_added = 0
+    for category in default_categories:
+        if db.categories.count_documents({"name": category["name"]}) == 0:
+            try:
+                db.categories.insert_one(category)
+                categories_added += 1
+                print(f"Added category: {category['name']}")
+            except Exception as e:
+                print(f"Error adding category {category['name']}: {e}")
+    
+    if categories_added > 0:
+        print(f"Added {categories_added} default categories")
+    else:
+        print("No new default categories needed")
 
 # Run if executed directly
 if __name__ == "__main__":
