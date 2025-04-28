@@ -14,9 +14,6 @@ if [ ! -d "venv" ]; then
     echo "Installing dependencies..."
     pip install -r requirements.txt
     
-    # Set up AI features
-    echo "Setting up AI features..."
-    python setup_ai.py
 else
     # Activate virtual environment
     source venv/bin/activate

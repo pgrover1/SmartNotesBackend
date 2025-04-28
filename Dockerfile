@@ -19,12 +19,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 COPY requirements.txt /app/
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy setup_ai.py for AI dependencies
-COPY setup_ai.py /app/
-RUN if [ "$ENABLE_AI_FEATURES" = "true" ]; then \
-        python setup_ai.py; \
-    fi
-
 # Copy project
 COPY . /app/
 
