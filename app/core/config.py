@@ -17,6 +17,8 @@ class Settings(BaseSettings):
     # MongoDB settings
     MONGODB_URI: str = os.getenv("MONGODB_URI", "")
     MONGODB_DB_NAME: str = os.getenv("MONGODB_DB_NAME", "notes_app")
+    MONGODB_TLS_ENABLED: bool = os.getenv("MONGODB_TLS_ENABLED", "true").lower() == "true"
+    MONGODB_MIN_TLS_VERSION: str = os.getenv("MONGODB_MIN_TLS_VERSION", "TLSv1.2")
     
     # Always use MongoDB
     USE_MONGODB: bool = True
