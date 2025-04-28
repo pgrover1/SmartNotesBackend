@@ -25,12 +25,14 @@ def init_mongodb():
     
     # Add default categories if none exist
     if db.categories.count_documents({}) == 0:
+        # Use simple datetime objects instead of complex structures
+        now = datetime.utcnow()
         default_categories = [
-            {"name": "Work", "description": "Work-related notes", "created_at": {"$date": {"$numberLong": str(int(datetime.utcnow().timestamp() * 1000))}}, "updated_at": {"$date": {"$numberLong": str(int(datetime.utcnow().timestamp() * 1000))}}},
-            {"name": "Personal", "description": "Personal notes", "created_at": {"$date": {"$numberLong": str(int(datetime.utcnow().timestamp() * 1000))}}, "updated_at": {"$date": {"$numberLong": str(int(datetime.utcnow().timestamp() * 1000))}}},
-            {"name": "Study", "description": "Study-related notes", "created_at": {"$date": {"$numberLong": str(int(datetime.utcnow().timestamp() * 1000))}}, "updated_at": {"$date": {"$numberLong": str(int(datetime.utcnow().timestamp() * 1000))}}},
-            {"name": "Ideas", "description": "Ideas and brainstorming", "created_at": {"$date": {"$numberLong": str(int(datetime.utcnow().timestamp() * 1000))}}, "updated_at": {"$date": {"$numberLong": str(int(datetime.utcnow().timestamp() * 1000))}}},
-            {"name": "To-Do", "description": "Tasks and to-do items", "created_at": {"$date": {"$numberLong": str(int(datetime.utcnow().timestamp() * 1000))}}, "updated_at": {"$date": {"$numberLong": str(int(datetime.utcnow().timestamp() * 1000))}}}
+            {"name": "Work", "description": "Work-related notes", "created_at": now, "updated_at": now},
+            {"name": "Personal", "description": "Personal notes", "created_at": now, "updated_at": now},
+            {"name": "Study", "description": "Study-related notes", "created_at": now, "updated_at": now},
+            {"name": "Ideas", "description": "Ideas and brainstorming", "created_at": now, "updated_at": now},
+            {"name": "To-Do", "description": "Tasks and to-do items", "created_at": now, "updated_at": now}
         ]
         
         db.categories.insert_many(default_categories)

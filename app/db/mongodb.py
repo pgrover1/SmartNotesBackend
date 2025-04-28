@@ -28,7 +28,7 @@ def get_client() -> MongoClient:
                     print(f"Server heartbeat started to {event.connection_id}")
                 
                 def succeeded(self, event):
-                    print(f"Server heartbeat to {event.connection_id} succeeded in {event.duration_micros / 1000.0} ms")
+                    print(f"Server heartbeat to {event.connection_id} succeeded")
                 
                 def failed(self, event):
                     print(f"Server heartbeat to {event.connection_id} failed with error: {event.reply}")
