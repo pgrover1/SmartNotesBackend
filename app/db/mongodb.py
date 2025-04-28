@@ -20,21 +20,21 @@ def get_client() -> MongoClient:
         
         print("Attempting to connect to MongoDB...")
         try:
-            from pymongo import monitoring
+            # from pymongo import monitoring
             
-            # Define an event listener for server heartbeat events
-            class ServerHeartbeatListener(monitoring.ServerHeartbeatListener):
-                def started(self, event):
-                    print(f"Server heartbeat started to {event.connection_id}")
+            # # Define an event listener for server heartbeat events
+            # class ServerHeartbeatListener(monitoring.ServerHeartbeatListener):
+            #     def started(self, event):
+            #         print(f"Server heartbeat started to {event.connection_id}")
                 
-                def succeeded(self, event):
-                    print(f"Server heartbeat to {event.connection_id} succeeded")
+            #     def succeeded(self, event):
+            #         print(f"Server heartbeat to {event.connection_id} succeeded")
                 
-                def failed(self, event):
-                    print(f"Server heartbeat to {event.connection_id} failed with error: {event.reply}")
+            #     def failed(self, event):
+            #         print(f"Server heartbeat to {event.connection_id} failed with error: {event.reply}")
             
-            # Register the listener
-            monitoring.register(ServerHeartbeatListener())
+            # # Register the listener
+            # monitoring.register(ServerHeartbeatListener())
             
             # Basic connection with minimal options and no SRV resolution
             print(f"Connecting to: {settings.MONGODB_URI}")
@@ -44,10 +44,7 @@ def get_client() -> MongoClient:
                 settings.MONGODB_URI,
                 serverSelectionTimeoutMS=10000
             )
-            
-            # Test connection
-            _client.admin.command('ping')
-            print("Successfully connected to MongoDB!")
+            print("MongoDB connection established successfully")
             return _client
         except Exception as e:
             import traceback
@@ -59,6 +56,8 @@ def get_client() -> MongoClient:
 def get_database() -> Database:
     """Get MongoDB database instance"""
     client = get_client()
+    print(f"MongoDB URI: {settings.MONGODB_URI}")
+    print(f"MongoDB settings.MONGODB_DB_NAME: {settings.MONGODB_DB_NAME}")
     return client[settings.MONGODB_DB_NAME]
 
 def get_collection(collection_name: str) -> Collection:
