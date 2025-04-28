@@ -109,7 +109,7 @@ class NoteAnalysisService:
         word_count = len(content.split())
         
         # Only summarize content that's more than 200 words
-        if word_count < 200:
+        if word_count < 20:
             result["error"] = "Content is less than 200 words and doesn't need summarization"
             return result
             
