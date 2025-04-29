@@ -145,7 +145,6 @@ def mock_ai_services():
     }
     
     mock_note_analysis = MagicMock()
-    mock_note_analysis.generate_summary.return_value = "This is a summary of the note"
     mock_note_analysis.generate_openai_summary.return_value = {
         "summary": "A test note summary",
         "success": True,

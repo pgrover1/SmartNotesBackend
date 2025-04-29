@@ -14,7 +14,6 @@ class MockAIServices:
         mock_ai.analyze_sentiment.return_value = "Positive"
         
         # Configure summarization mock
-        mock_ai.generate_summary.return_value = "This is a summary of the text"
         
         # Configure NLQ processing mock
         mock_ai.process_natural_language_query.return_value = {
@@ -40,7 +39,6 @@ class MockAIServices:
         }
         
         mock_note_analysis = MagicMock()
-        mock_note_analysis.generate_summary.return_value = "This is a summary of the note"
         mock_note_analysis.generate_openai_summary.return_value = {
             "summary": "A test note summary",
             "success": True,
