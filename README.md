@@ -1,32 +1,41 @@
-# Notes API Backend with MongoDB Support
+# Notes API Backend 
 
-A FastAPI backend for a notes application with AI-powered features and MongoDB integration.
+A FastAPI backend for a smart AI notes application with AI-powered. User Should be able to able to create, edit and delete notes.
 
 ## Features
 
-- RESTful API for notes management (CRUD operations)
+- User Should be able to create, delete, view, edit categories for the notes
+- User should be able to create, delete, view, edit notes
 - Category management for notes
-- Database flexibility:
-  - MongoDB as primary database
-  - SQLAlchemy/SQL database fallback
-- AI-powered features (on-demand):
-  - Note summarization for content with more than 200 words
-  - Sentiment analysis of note content (positive/neutral/negative)
+- AI-powered features (during editing of notes):
+  - Note summarization for content with more than 20 words in note content. 
+  - Sentiment analysis of note content (positive/neutral/negative/mixed)
   - Category suggestions based on note content
-  - Natural language queries for searching notes
 
 ## AI Features
 
 ### On-Demand Summarization
-The backend provides an endpoint to generate concise summaries for notes using OpenAI's GPT-4o model. Summaries are only generated for notes with more than 200 words, as shorter notes don't benefit from summarization. Access this feature via the `/notes/{note_id}/summarize` endpoint.
+The backend provides an endpoint to generate concise summaries for notes using OpenAI's GPT-4o model. Summaries are only generated for notes with more than 20 words, as shorter content doesn't benefit from summarization. The system allows for:
+
+Customizable summary length (character limit- min length should be 20 workds)
+Model selection (GPT-4o)
+Automatic title incorporation for context-aware summaries
+Access this feature via the /notes/{note_id}/summarize.
 
 ### Sentiment Analysis
-Notes can be analyzed to determine their emotional tone (Positive, Neutral, or Negative) using OpenAI's GPT-4o model. This is available through the dedicated `/notes/{note_id}/sentiment` endpoint.
+Notes are automatically analyzed to determine their emotional tone using OpenAI's GPT-4o model. The system classifies sentiment into four categories:
+
+Positive
+Neutral
+Negative
+Mixed
+Sentiment analysis happens automatically when notes are created or updated. This is available through the dedicated `/notes/{note_id}/sentiment` endpoint.
 
 ### Category Suggestion
-The system can suggest appropriate categories for notes based on their content using:
-1. Zero-shot classification with OpenAI's GPT-4o model
-2. Semantic similarity (as a fallback method)
+The system suggests appropriate categories for notes based on their content using:
+
+Zero-shot classification with OpenAI's GPT-4o model
+Confidence scoring to evaluate suggestion quality
 
 Category suggestions are available on-demand through the `/notes/{note_id}/suggest-category` endpoint.
 
