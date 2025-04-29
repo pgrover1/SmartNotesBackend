@@ -47,6 +47,12 @@ NoteResponse = NoteMongoResponse
 # Query model for note search
 class NoteSearchQuery(BaseModel):
     """Schema for note search queries"""
-    keyword: Optional[str] = Field(None, description="Keyword to search in title and content")
-    category_id: Optional[str] = Field(None, description="Filter by category ID")
-    natural_language_query: Optional[str] = Field(None, description="Natural language query for searching notes")
+    keyword: Optional[str] = Field(None, description="Natural language query for searching notes")
+    
+class ParsedNLQuery(BaseModel):
+    """Schema for parsed natural language query"""
+    keywords: List[str] = []
+    category: Optional[str] = None
+    date_from: Optional[datetime] = None
+    date_to: Optional[datetime] = None
+    note_type: Optional[str] = None

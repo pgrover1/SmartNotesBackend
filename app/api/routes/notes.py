@@ -5,14 +5,21 @@ from bson.objectid import ObjectId
 
 from app.core.config import settings
 from app.db.provider import get_db
-from app.services.factory import get_note_service, get_category_service, get_categorization_service, get_note_analysis_service
+from app.services.factory import get_note_service, get_category_service, get_categorization_service, get_note_analysis_service, get_vector_store_service, get_nlq_parser_service
 from app.schemas.note import NoteCreate, NoteUpdate, NoteResponse, NoteSearchQuery, NoteMongoResponse
+from app.repositories.note_mongodb import note_repository
+import logging
+
+# Setup logging
+logger = logging.getLogger(__name__)
 
 # Get services
 note_service = get_note_service()
 category_service = get_category_service()
 categorization_service = get_categorization_service()
 note_analysis_service = get_note_analysis_service()
+vector_store = get_vector_store_service()
+nlq_parser_service = get_nlq_parser_service()
 
 # Create router
 router = APIRouter()
@@ -120,7 +127,13 @@ async def search_notes(
     limit: int = 100,
     db = Depends(get_db())
 ):
-    """Search notes by various criteria"""
+    """Search notes by various criteria
+    
+    Supports natural language queries like:
+    - "Find my meeting notes from last Monday"
+    - "Show me all notes about project X with more than 100 words"
+    - "Get my personal notes from last month"
+    """
     notes = note_service.search_notes(db, query=query, skip=skip, limit=limit)
     
     # Enhance each note with categories
@@ -128,6 +141,26 @@ async def search_notes(
     enhanced_notes = [enhance_note_with_categories(note, db) for note in notes]
     
     return enhanced_notes
+
+@router.post("/rebuild-vector-store", response_model=Dict[str, Any])
+async def rebuild_vector_store(
+    clear_existing: bool = Query(False, description="Clear existing vector store before rebuilding"),
+    db = Depends(get_db())
+):
+    """Rebuild the vector store with all notes in the database
+    
+    This is useful after importing notes or if the vector search is not working correctly.
+    It will create embeddings for all notes in the database and store them in the vector store.
+    
+    - Set clear_existing=true to remove all existing embeddings before rebuilding
+    """
+    count = note_service.rebuild_vector_store(db, clear_existing=clear_existing)
+    
+    if clear_existing:
+        return {"success": True, "message": f"Vector store cleared and rebuilt with {count} notes"}
+    else:
+        return {"success": True, "message": f"Vector store updated with {count} notes"}
+
 
 @router.post("/{note_id}/suggest-category", response_model=Dict[str, Any])
 async def suggest_category_for_note(
